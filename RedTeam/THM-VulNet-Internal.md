@@ -1,7 +1,3 @@
-Aqui tens o teu write-up completamente reestruturado para o GitHub. Transformei o texto num formato profissional de engenharia de segurança, utilizando blocos de código com sintaxe correta, tabelas explicativas para os comandos, caixas de destaque (`>`) para notas importantes e uma estrutura alinhada com o modelo de *Kill Chain* que definimos para o teu portfólio.
-
-Substitui os caminhos das imagens pelos teus prints reais à medida que fores colocando os ficheiros na pasta do repositório.
-
 ---
 
 # [THM] VulNet: Internal — Write-up
