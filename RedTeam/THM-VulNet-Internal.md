@@ -1,5 +1,5 @@
 # [THM] VulNet: Internal — Write-up
-<p align="center"><img src="image_7029c6.png" alt="VulNet Internal Banner" width="100%"></p>
+<p align="center"><img src="RedTeam/1774979760428.png" alt="VulNet Internal Banner" width="100%"></p>
 
 ## 🎯 Room Overview
 
