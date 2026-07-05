@@ -1,6 +1,7 @@
 # [THM] VulNet: Internal — Write-up
-<img width="1144" height="644" alt="1774979760428" src="https://github.com/user-attachments/assets/2b84bc31-2b99-4af7-859a-bc2ea6a67c31" />
-
+<p align="center">
+  <img src="image_7029c6.png" alt="VulNet Internal Banner" width="100%">
+</p>
 ## 🎯 Room Overview
 
 * **Target:** `vulnet.thm`
