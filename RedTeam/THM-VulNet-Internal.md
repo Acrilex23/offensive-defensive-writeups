@@ -1,5 +1,3 @@
----
-
 # [THM] VulNet: Internal — Write-up
 
 ## 🎯 Room Overview
