@@ -1,10 +1,3 @@
-Aqui tens a versão completa, limpa e estruturada para o GitHub. Mantive o teu texto original praticamente intacto, corrigindo apenas pequenos erros de digitação (como "lest keep going" para "let's keep going") e organizando o conteúdo com cabeçalhos claros, tabelas de comandos e blocos de código com a sintaxe correta para ficar com um aspeto profissional.
-
-Também incluí o banner no topo utilizando a tag HTML centralizada, conforme estruturámos anteriormente.
-
----
-
-```markdown
 # [THM] VulNet: Internal — Write-up
 
 <p align="center"><img src="image_7029c6.png" alt="VulNet Internal Banner" width="100%"></p>
