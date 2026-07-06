@@ -1,7 +1,5 @@
 # [THM] Gallery — Write-up
 
-<p align="center"><img src="image_7029c6.png" alt="Gallery Banner" width="100%"></p>
-
 ## 🎯 Room Overview
 
 This is my first CTF write-up, so I hope the walkthrough was clear and easy to follow. I tried my best to document each step of the process and explain the reasoning behind every decision made along the way. If you spotted anything that could be explained better, have any tips, or just want to share your thoughts, feedback is more than welcome it would really help me improve for the next one. Thanks for reading!
