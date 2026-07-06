@@ -1,4 +1,4 @@
-<img width="951" height="204" alt="1774811704302" src="https://github.com/user-attachments/assets/4479abcb-6a29-410e-860f-517e1a00bc93" />
+<img width="1144" height="644" alt="1774979760428" src="https://github.com/user-attachments/assets/fcb9a6eb-fab4-4a6e-94a2-2fd777190e5a" />
 # [THM] VulNet: Internal — Write-up
 
 ## 🎯 Room Overview
@@ -78,8 +78,7 @@ Using `NetExec` to audit SMB shares for anonymous access:
 nxc smb vulnet.thm -u '' -p '' --shares
 
 ```
-<img width="1144" height="644" alt="1774979760428" src="https://github.com/user-attachments/assets/fcb9a6eb-fab4-4a6e-94a2-2fd777190e5a" />
-
+<img width="951" height="204" alt="1774811704302" src="https://github.com/user-attachments/assets/4479abcb-6a29-410e-860f-517e1a00bc93" />
 Null session profiling worked. Accessing the identified public share via guest login:
 
 ```bash
