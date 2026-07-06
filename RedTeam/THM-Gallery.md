@@ -216,7 +216,3 @@ The Gallery machine on TryHackMe proved to be a fantastic learning experience fr
 The box had plenty of twists along the way, with several rabbit holes that required stepping back and rethinking the approach, which honestly makes it a great machine for building the kind of methodology and patience that CTFs demand.
 
 If you made it this far, thank you for reading and I hope it was helpful or at the very least an enjoyable walkthrough to follow along with. As mentioned at the start, this is my first write-up so any feedback or suggestions are truly appreciated — they will go a long way in helping me grow and improve for the next one!
-
-```
-
-```
