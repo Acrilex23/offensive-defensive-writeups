@@ -1,6 +1,6 @@
-<img width="1144" height="644" alt="1774979760428" src="https://github.com/user-attachments/assets/fcb9a6eb-fab4-4a6e-94a2-2fd777190e5a" />
-
 # [THM] VulNet: Internal — Write-up
+
+<img width="1144" height="644" alt="1774979760428" src="https://github.com/user-attachments/assets/fcb9a6eb-fab4-4a6e-94a2-2fd777190e5a" />
 
 ## 🎯 Room Overview
 
