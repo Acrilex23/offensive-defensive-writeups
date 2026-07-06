@@ -86,19 +86,22 @@ nxc smb vulnet.thm -u '' -p '' --shares
 Connecting to the shares share using smbclient as a guest user, we navigate through its contents and find two directories `temp` and `data`.
 
 ```bash
-smbclient //vulnet.thm/shares -U "guest"
+smbclient //vulnet.thm/shares -U "vulnet.thm\\guest"
 
 ```
 
 Inside the `temp` folder there is a file called `services.txt`, which we download immediately. Moving over to the `data` folder reveals two more files, `data.txt` and `business-req.txt`, both of which we grab using `mget` to pull everything down at once.
 
 Three files in hand without needing a single valid credential let's open them up and see what information they contain.
+
 <img width="936" height="716" alt="1774811727803" src="https://github.com/user-attachments/assets/1ae17e8a-a0ce-4027-a7e7-8455100a8966" />
 
 In the services file we get our first flag, let's keep going!
+
 <img width="368" height="58" alt="1774811752240" src="https://github.com/user-attachments/assets/67414d32-f750-4c5e-826c-978eeadab3d5" />
 
 After reviewing the downloaded files, none of them contain anything immediately actionable or useful for gaining further access to the machine. Rather than going down a rabbit hole and wasting valuable time, it's better to move on and shift focus to the other services we identified during the initial scan.
+
 <img width="941" height="228" alt="1774811767224" src="https://github.com/user-attachments/assets/aeadabb3-92bf-49d5-82ea-81c230c2791d" />
 
 ### 2. Redis Auditing (Port 6379)
