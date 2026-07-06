@@ -270,7 +270,3 @@ The privilege escalation was particularly creative, abusing a TeamCity CI/CD ser
 Overall this machine covered an impressive range of techniques including NFS enumeration, Redis exploitation, Rsync abuse, SSH key injection, port forwarding, and CI/CD server abuse. It's a brilliant box for anyone looking to sharpen their enumeration skills and learn to think across multiple services simultaneously.
 
 Thanks for reading and as always, any feedback is welcome. More write-ups are on the way!
-
-```
-
-```
