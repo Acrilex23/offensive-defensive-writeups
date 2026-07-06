@@ -1,6 +1,7 @@
 # [THM] VulNet: Internal — Write-up
 
-<p align="center"><img src="image_7029c6.png" alt="VulNet Internal Banner" width="100%"></p>
+<img width="1144" height="644" alt="1774979760428" src="https://github.com/user-attachments/assets/66d4d832-84a0-48b3-9175-bb9323d184d1" />
+
 
 ## 🎯 Room Overview
 
@@ -80,6 +81,7 @@ Using NetExec (nxc) to enumerate the Samba shares on the target with a null auth
 nxc smb vulnet.thm -u '' -p '' --shares
 
 ```
+<img width="951" height="204" alt="1774811704302" src="https://github.com/user-attachments/assets/8d20028c-e897-48a9-a414-026256e3bb26" />
 
 Connecting to the shares share using smbclient as a guest user, we navigate through its contents and find two directories `temp` and `data`.
 
