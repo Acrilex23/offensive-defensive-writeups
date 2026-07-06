@@ -2,8 +2,6 @@
 
 ## 🎯 Room Overview
 
-This is my first CTF write-up, so I hope the walkthrough was clear and easy to follow. I tried my best to document each step of the process and explain the reasoning behind every decision made along the way. If you spotted anything that could be explained better, have any tips, or just want to share your thoughts, feedback is more than welcome it would really help me improve for the next one. Thanks for reading!
-
 * **Target:** `gallery.thm`
 * **Difficulty:** Easy / Medium
 * **Objective:** Enumerate active web endpoints, exploit a Time-Based Blind SQL Injection to bypass authentication, leverage unvalidated file uploads for initial access, and abuse misconfigured sudo permissions via GTFOBins.
